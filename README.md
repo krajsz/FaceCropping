@@ -15,4 +15,4 @@ The SamuCam project
 g++ crop_faces.cpp -o app `pkg-config --cflags --libs opencv` -std=c++11
 
 ## Usage:
-./app location_of_video
+./app input_video save_directory
