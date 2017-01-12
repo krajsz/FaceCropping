@@ -89,8 +89,6 @@ bool processImg(string location){
     Point pt1(faces[i].x-1, faces[i].y-1);
     Point pt2(faces[i].x + faces[i].width + 2, faces[i].y + faces[i].height+2);
 
-    rectangle ( frame, pt1, pt2, cv::Scalar ( 240, 230, 200 ) );
-
     // Crop the images
     Mat croppedImg = frame(Rect(pt1.x, pt1.y, (pt2.x - pt1.x), (pt2.y - pt1.y)));
 
