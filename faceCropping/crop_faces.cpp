@@ -40,6 +40,7 @@
 #include "opencv2/imgproc.hpp"
 
 #include <iostream>
+#include <vector>
 #include <stdio.h>
 
 #include <sys/stat.h>
