@@ -45,17 +45,14 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
-using namespace std;
-using namespace cv;
-
-CascadeClassifier faceClassifier;
+cv::CascadeClassifier faceClassifier;
 
 // The current index of the images.
 // It starts from 0.
 int INDEX_OF_IMAGE = 0;
 
 // The size of the output image in pixels.
-const Size OUTPUT_IMAGE_SIZE(280,280);
+const cv::Size OUTPUT_IMAGE_SIZE(280,280);
 
 /*
   @param  location - the location of the image to be processed
@@ -66,42 +63,39 @@ const Size OUTPUT_IMAGE_SIZE(280,280);
   and then detects the faces.
   The detected faces are stored in the save folder given by the user.
 */
-bool processImg(string location){
+bool processImg(const std::string& location) {
 
-  cv::Mat frame, originalFrame;
+	cv::Mat frame;
 
-  frame = imread(location);
-  originalFrame = frame;
+	frame = cv::imread(location);
 
-  if (frame.empty())
-    return false;
+	if (frame.empty())
+		return false;
 
-  std::vector<cv::Rect> faces;
-  cv::Mat grayFrame;
+	std::vector<cv::Rect> faces;
+	cv::Mat grayFrame;
 
-  cv::cvtColor ( frame, grayFrame, cv::COLOR_BGR2GRAY );
-  cv::equalizeHist ( grayFrame, grayFrame );
+	cv::cvtColor ( frame, grayFrame, cv::COLOR_BGR2GRAY );
+	cv::equalizeHist ( grayFrame, grayFrame );
 
-  faceClassifier.detectMultiScale ( grayFrame, faces, 1.1, 4, 0, cv::Size ( 60, 60 ) );
+	faceClassifier.detectMultiScale ( grayFrame, faces, 1.1, 4, 0, cv::Size ( 60, 60 ) );
 
-  for(int i = 0; i < faces.size(); i++){
+	for(int i = 0; i < faces.size(); ++i) {
 
-    Point pt1(faces[i].x-1, faces[i].y-1);
-    Point pt2(faces[i].x + faces[i].width + 2, faces[i].y + faces[i].height+2);
+		cv::Point pt1(faces[i].x-1, faces[i].y-1);
+		cv::Point pt2(faces[i].x + faces[i].width + 2, faces[i].y + faces[i].height+2);
 
-    // Crop the images
-    Mat croppedImg = frame(Rect(pt1.x, pt1.y, (pt2.x - pt1.x), (pt2.y - pt1.y)));
+		// Crop the images
+		cv::Mat croppedImg = cv::frame(Rect(pt1.x, pt1.y, (pt2.x - pt1.x), (pt2.y - pt1.y)));
 
-    resize ( frame, frame, OUTPUT_IMAGE_SIZE, 0, 0, INTER_CUBIC );
+		cv::resize ( frame, frame, OUTPUT_IMAGE_SIZE, 0, 0, INTER_CUBIC );
 
-    imwrite("cropped_" + to_string(INDEX_OF_IMAGE + 1) + ".jpg", croppedImg);
+		cv::imwrite("cropped_" + std::to_string(INDEX_OF_IMAGE + 1) + ".jpg", croppedImg);
 
-    INDEX_OF_IMAGE++;
+		INDEX_OF_IMAGE++;
+	}
 
-  }
-
-  return true;
-
+	return true;
 }
 
 /*
@@ -114,90 +108,78 @@ bool processImg(string location){
   and then detects the faces.
   The detected faces are stored in the save folder given by the user.
 */
-bool processImg(const Mat& frame, const string& saveDir){
+bool processImg(const cv::Mat& frame, const std::string& saveDir) {
 
-  cv::Mat originalFrame;
+	if (frame.empty())
+		return false;
 
-  originalFrame = frame;
+	mkdir(saveDir.c_str(),S_IRUSR | S_IWUSR | S_IXUSR);
 
-  if (frame.empty())
-    return false;
+	std::vector<cv::Rect> faces;
+	cv::Mat grayFrame;
 
-  mkdir(saveDir.c_str(),S_IRUSR | S_IWUSR | S_IXUSR);
+	cv::cvtColor ( frame, grayFrame, cv::COLOR_BGR2GRAY );
+	cv::equalizeHist ( grayFrame, grayFrame );
 
-  std::vector<cv::Rect> faces;
-  cv::Mat grayFrame;
+	faceClassifier.detectMultiScale ( grayFrame, faces, 1.1, 4, 0, cv::Size ( 60, 60 ) );
 
-  cv::cvtColor ( frame, grayFrame, cv::COLOR_BGR2GRAY );
-  cv::equalizeHist ( grayFrame, grayFrame );
+	for(int i = 0; i < faces.size(); i++) {
 
-  faceClassifier.detectMultiScale ( grayFrame, faces, 1.1, 4, 0, cv::Size ( 60, 60 ) );
+		cv::Point pt1(faces[i].x-1, faces[i].y-1);
+		cv::Point pt2(faces[i].x + faces[i].width + 2, faces[i].y + faces[i].height+2);
 
+		// Crop the images
+		cv::Mat croppedImg = cv::frame(Rect(pt1.x, pt1.y, (pt2.x - pt1.x), (pt2.y - pt1.y)));
 
-  for(int i = 0; i < faces.size(); i++){
+		cv::resize ( croppedImg, croppedImg, OUTPUT_IMAGE_SIZE);
+		cv::imwrite(saveDir + "/cropped_" + std::to_string(INDEX_OF_IMAGE + 1) + ".jpg", croppedImg);
 
-    Point pt1(faces[i].x-1, faces[i].y-1);
-    Point pt2(faces[i].x + faces[i].width + 2, faces[i].y + faces[i].height+2);
-
-    // Crop the images
-    Mat croppedImg = frame(Rect(pt1.x, pt1.y, (pt2.x - pt1.x), (pt2.y - pt1.y)));
-
-    resize ( croppedImg, croppedImg, OUTPUT_IMAGE_SIZE);
-    imwrite(saveDir + "/cropped_" + to_string(INDEX_OF_IMAGE + 1) + ".jpg", croppedImg);
-
-    INDEX_OF_IMAGE++;
-
-  }
-
-  return true;
-
+		INDEX_OF_IMAGE++;
+	}
+	return true;
 }
 
 /*
   Prints the correct usage of the program.
 */
-void usage(){
-  cout << "The usage of the program is the following:\n";
-  cout << "./app input_video save_directory" << endl;
+void usage() {
+	std::cout << "The usage of the program is the following:" << std::endl;
+	std::cout << "./app input_video save_directory" << std::endl;
 }
 
-int main( int argc, char *argv[] ){
+int main( int argc, char *argv[] ) {
 
-  if(argc < 3){
-    cout << "Wrong number of arguments. The program terminates." << endl;
+	if(argc < 3) {
+		std::cout << "Wrong number of arguments. The program terminates." << std::endl;
+		usage();
+		return -1;
+	}
 
-    usage();
+	std::string location {argv[1]};
+	std::string saveDirectory {argv[2]};
 
-    return -1;
-  }
+	std::string faceXML {"lbpcascade_frontalface.xml"}; // https://github.com/Itseez/opencv/tree/master/data/lbpcascades
 
-  string location = argv[1];
-  string saveDirectory = argv[2];
+	if (!faceClassifier.load(faceXML)) {
+		std::cerr << "An error occured while processing the xml file. The program terminates." << std::endl;
+		return -1;
+	}
 
-  string faceXML = "lbpcascade_frontalface.xml"; // https://github.com/Itseez/opencv/tree/master/data/lbpcascades
+	cv::VideoCapture cap(location);
 
-  if (!faceClassifier.load(faceXML)){
-    cerr << "An error occured while processing the xml file. The program terminates." << endl;
-    return -1;
-  }
+	if(!cap.isOpened()) {
+	        std::cerr << "An error occured while trying to open the video. The program terminates." << std::endl;
+		usage();
+		return -1;
+	}
 
-  VideoCapture cap(location);
+	cv::Mat frame;
+	cap >> frame;
 
-  if(!cap.isOpened()){
-    cerr << "An error occured while trying to open the video. The program terminates." << endl;
+	while(!frame.empty()) {
+		processImg(frame, saveDirectory);
+		cap >> frame;
+	}
 
-    usage();
-
-    return -1;
-  }
-
-  Mat frame;
-  cap >> frame;
-
-  while(!frame.empty()){
-      processImg(frame, saveDirectory);
-      cap >> frame;
-  }
-
-  return 0;
+	return 0;
 }
