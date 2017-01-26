@@ -35,9 +35,9 @@
 
 // Usage: ./app location_of_video
 
-#include "opencv2/objdetect.hpp"
+/*#include "opencv2/objdetect.hpp"
 #include "opencv2/highgui.hpp"
-#include "opencv2/imgproc.hpp"
+#include "opencv2/imgproc.hpp"*/
 
 #include <iostream>
 #include <vector>
@@ -50,10 +50,10 @@ cv::CascadeClassifier faceClassifier;
 
 // The current index of the images.
 // It starts from 0.
-int INDEX_OF_IMAGE = 0;
+int INDEX_OF_IMAGE {0};
 
 // The size of the output image in pixels.
-const cv::Size OUTPUT_IMAGE_SIZE(280,280);
+const cv::Size OUTPUT_IMAGE_SIZE{280,280};
 
 /*
   @param  location - the location of the image to be processed
@@ -66,9 +66,7 @@ const cv::Size OUTPUT_IMAGE_SIZE(280,280);
 */
 bool processImg(const std::string& location) {
 
-	cv::Mat frame;
-
-	frame = cv::imread(location);
+    cv::Mat frame{cv::imread(location)};
 
 	if (frame.empty())
 		return false;
@@ -83,14 +81,12 @@ bool processImg(const std::string& location) {
 
 	for(int i = 0; i < faces.size(); ++i) {
 
-		cv::Point pt1(faces[i].x-1, faces[i].y-1);
-		cv::Point pt2(faces[i].x + faces[i].width + 2, faces[i].y + faces[i].height+2);
+        cv::Point pt1{faces[i].x-1, faces[i].y-1};
+        cv::Point pt2{faces[i].x + faces[i].width + 2, faces[i].y + faces[i].height+2};
 
 		// Crop the images
-		cv::Mat croppedImg = cv::frame(Rect(pt1.x, pt1.y, (pt2.x - pt1.x), (pt2.y - pt1.y)));
-
-		cv::resize ( frame, frame, OUTPUT_IMAGE_SIZE, 0, 0, INTER_CUBIC );
-
+        cv::Mat croppedImg {frame(cv::Rect(pt1.x, pt1.y, (pt2.x - pt1.x), (pt2.y - pt1.y)))};
+        cv::resize (frame, frame, OUTPUT_IMAGE_SIZE, 0, 0, INTER_CUBIC );
 		cv::imwrite("cropped_" + std::to_string(INDEX_OF_IMAGE + 1) + ".jpg", croppedImg);
 
 		INDEX_OF_IMAGE++;
@@ -114,7 +110,7 @@ bool processImg(const cv::Mat& frame, const std::string& saveDir) {
 	if (frame.empty())
 		return false;
 
-	mkdir(saveDir.c_str(),S_IRUSR | S_IWUSR | S_IXUSR);
+    mkdir(saveDir.c_str(), S_IRUSR | S_IWUSR | S_IXUSR);
 
 	std::vector<cv::Rect> faces;
 	cv::Mat grayFrame;
@@ -126,12 +122,11 @@ bool processImg(const cv::Mat& frame, const std::string& saveDir) {
 
 	for(int i = 0; i < faces.size(); i++) {
 
-		cv::Point pt1(faces[i].x-1, faces[i].y-1);
-		cv::Point pt2(faces[i].x + faces[i].width + 2, faces[i].y + faces[i].height+2);
+        cv::Point pt1{faces[i].x-1, faces[i].y-1};
+        cv::Point pt2{faces[i].x + faces[i].width + 2, faces[i].y + faces[i].height+2};
 
 		// Crop the images
-		cv::Mat croppedImg = cv::frame(Rect(pt1.x, pt1.y, (pt2.x - pt1.x), (pt2.y - pt1.y)));
-
+        cv::Mat croppedImg {frame(cv::Rect(pt1.x, pt1.y, (pt2.x - pt1.x), (pt2.y - pt1.y)))};
 		cv::resize ( croppedImg, croppedImg, OUTPUT_IMAGE_SIZE);
 		cv::imwrite(saveDir + "/cropped_" + std::to_string(INDEX_OF_IMAGE + 1) + ".jpg", croppedImg);
 
@@ -166,7 +161,7 @@ int main( int argc, char *argv[] ) {
 		return -1;
 	}
 
-	cv::VideoCapture cap(location);
+    cv::VideoCapture cap{location};
 
 	if(!cap.isOpened()) {
 	        std::cerr << "An error occured while trying to open the video. The program terminates." << std::endl;
